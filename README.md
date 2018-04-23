@@ -68,3 +68,27 @@ So this project is a demonstration of how we can refactor the code above and imp
 
 Here is the main snippet:
 
+```java
+public Optional<UiForm> populate(User user) {
+    return Stream.<Function<User, Optional<UiForm>>>of(
+            PrePopulationServiceImpl::populateFromSourceA,
+            PrePopulationServiceImpl::populateFromSourceC,
+            PrePopulationServiceImpl::populateFromSourceB,
+            PrePopulationServiceImpl::populateFromNothing)
+            .map(fn -> fn.apply(user))
+            .filter(Optional::isPresent)
+            .findFirst()
+            .flatMap(Function.identity());
+}
+private static Optional<UiForm> populateFromSourceA(User user) {...}
+private static Optional<UiForm> populateFromSourceB(User user) {...}
+private static Optional<UiForm> populateFromSourceC(User user) {...}
+
+
+# Explanation:
+We first construct a stream of functions.  The order of those function is important because it will be the order they will be called.  The .map is responsible to call the function which will return an Optional.  The .filter is responsible to verify if the executed function has returned an Optional with a result.  The .findFirst will simply stop as soon as we have obtained an Optional with a result. The .flatMap only makes our returned result into the proper type.
+
+Essentially, this code will execute each function in the stream and as soon as one of the function is successful, it stop there and the functions down the stream are not even executed.  In other word, we try the first function, if that does not work, we try the second one, if that does not work, we try the third one and so forth.
+
+The code read well because we can see that we are trying to populate from Source A, the Source B, then Source C and last we do not populate.
+We can also easily change the order or add more sources.
