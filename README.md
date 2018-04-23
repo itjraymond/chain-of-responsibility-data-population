@@ -37,7 +37,7 @@ public UiForm getPrepopulatedUiForm(User user, Integer goalId, GoalType goalType
 
     // Total lines: ~ 500 lines
 }
-
+```
 
 This code is no longer readable and truly hard to maintain and extend.  What if business ask us to populate from another source? Scary!
 
@@ -50,7 +50,7 @@ The first if statement is already smelly. The if statement contains a method cal
 
 ```java
 ...!tryToPopulateUiFormFromLatestCompletedGoal(...)
-
+```
 So we should avoid such coding practice.
 
 We also have several ifs which is an indication of dealing with several conditions.
@@ -66,7 +66,7 @@ Of course, in order to populate from a certain source has several conditions to 
 
 So this project is a demonstration of how we can refactor the code above and implement it into a `Chain of Responsibility` by leveraging lambdas.
 
-Here is the main snippet:
+# Here is the main snippet:
 
 ```java
 public Optional<UiForm> populate(User user) {
@@ -80,10 +80,11 @@ public Optional<UiForm> populate(User user) {
             .findFirst()
             .flatMap(Function.identity());
 }
+
 private static Optional<UiForm> populateFromSourceA(User user) {...}
 private static Optional<UiForm> populateFromSourceB(User user) {...}
 private static Optional<UiForm> populateFromSourceC(User user) {...}
-
+```
 
 # Explanation:
 We first construct a stream of functions.  The order of those function is important because it will be the order they will be called.  The .map is responsible to call the function which will return an Optional.  The .filter is responsible to verify if the executed function has returned an Optional with a result.  The .findFirst will simply stop as soon as we have obtained an Optional with a result. The .flatMap only makes our returned result into the proper type.
